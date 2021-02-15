@@ -1,0 +1,149 @@
+---
+title: "DV Assignment 1"
+author: "Ming Nie ID mn2984"
+date: "2/10/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+data_ast <- read.csv("astronauts.csv") # import the data
+library(tidyverse)
+library(ggthemes)
+library(gapminder)
+library(plotly)
+library(DT)
+
+```
+## Task1
+```{r} 
+names(data_ast) # check the data
+
+data_unique <- data_ast[!duplicated(data_6$name), ]  # remove repeated names
+
+data_1 <- select(data_unique, id : year_of_mission)
+data_1 <- mutate(data_1, age_of_selection = year_of_selection - year_of_birth)
+
+```
+1.1 
+
+I would like to show our readers the age of people when selected as candidates for astronauts. Since the commercial space exploration is becoming more and more popular, as a citizen, one may would like to find out when he or she should consider starting to prepare for space travel. 
+
+Bar chart is used to count the number of one variable.
+
+
+```{r} 
+ggplot(data_1, mapping = aes(y = age_of_selection)) + 
+  geom_bar(color = "blue") +
+  labs(x = "Count", y = "Age", 
+       title = "Astronaunt Age When selected",
+       caption = "Source: Astronaut Database (Stavnichuk & Corlett 2020)") + coord_flip()+
+theme_tufte()
+```
+
+1.2 
+
+The second trend I would like to show is the gender composition of the astronauts. Many females would like to explore the space. Also, many people would like to travel with their families or friends (with female members) if they can have the chance to go to the space. Therefore, they may want to look at the statistics of number of females go to space over the recent years. In addition, female is vital if human have the ambition to give birth to a new generation in the space.
+
+
+Bar chart is used to count the number of one variable. And I highlighted female astronauts in each year of mission.
+
+visualization principles of the lecture applied: the goal is to highlight trends, maximize data-ink ratio (used theme_tufte), the preference for simplicity of human brains(I try to show only one important piece of information in each graph)
+
+```{r}
+ggplot(data_unique, aes(x = year_of_mission, fill = sex), position = "fill") + 
+  geom_bar(color = "blue") + 
+  labs(x = "Year", y = "Number", 
+       title = "Astronaut Gender Change",
+       caption = "Source: Astronaut Database (Stavnichuk & Corlett 2020)") +
+theme_tufte()
+```
+
+
+## Task2
+
+After 1980, more and more countries started to develop their own space technology. And we can also see an increasing number of missions of the two superpower. In this part, I use the number of astronauts of each country as an indication of the space technology power. Readers may be interested to find the data of their own countries and compare it with others.
+
+Boxplot is used to show the viewers a clear scatter of a large number of point data. 
+
+```{r}
+ggplot(data_ast, aes(x = year_of_mission, y= nationality)) + 
+  geom_boxplot()+
+  scale_y_discrete(guide = guide_axis(n.dodge=2))+
+  labs(x = "Year of Mission", y = "Nationality", 
+       title = "Space Mission Number by Nationality",
+       caption = "Source: Astronaut Database (Stavnichuk & Corlett 2020)") +
+theme_tufte()
+```
+
+
+## Task 3
+
+I would like to show the the histogram of the individual total eva hours, in order to show our audience how long can a astronaut conduct extravehicular activities. 
+
+The input is data_unique, which includes each astronaut only once. I set the limit of x to be 0.01 to remove the large quantity of data with 0 total_eva_hrs. 
+
+I use geom_histogram to plot this one continuous variable. I also separate military and civilian backgrounds to see their difference in total eva hours.
+
+```{r}
+ggplot(data_unique, aes(x = total_eva_hrs, fill = military_civilian), position = "fill")+
+  geom_histogram(color = "yellow") + xlim(0.01, 90) +
+  labs(x = "Total EVA Hours", y = "Count", 
+       title = "Total EVA Hours",
+       caption = "Source: Astronaut Database (Stavnichuk & Corlett 2020)") +
+theme_tufte()
+
+
+```
+
+
+## Task 4
+
+4.1 The first graph of task 4 is to show the occupation of the astronauts over the years. Readers may want to know their common occupational background. 
+
+Interactivity id added to the graph, so users can compare data between years and find out each count of occupational background.
+
+Bar chart is used to count the number of different occupations in each year. Different occupations are presented in different colors.
+
+```{r}
+plot4_1 <- ggplot(data_unique, aes(x = year_of_selection, fill = occupation), position = "fill")+
+  geom_bar() +
+  labs(x = "Year of Selection", y = "Occupation", 
+       title = "Occupational Background of Astronauts",
+       caption = "Source: Astronaut Database (Stavnichuk & Corlett 2020)") +
+theme_tufte()
+
+ggplotly(plot4_1,tooltip = c("occupation", "count"))
+
+```
+
+
+4.2 I would like to show the hours per mission changes over the years, which shows an increasing mission hours of each time astronaut go to space. Hours of space travel can be an important factor in commercial space exploration. More hours will enable astronauts conduct more tasks in each travel.
+
+To show the pattern of change over time, I use the scatter plot. Interactivity gives the audience access to each point data.
+
+```{r}
+plot_ly(data_ast, x = ~year_of_mission, y= ~hours_mission, type = "scatter", mode = "markers") 
+
+```
+
+## Task 5 
+
+I add interactivity to the two graphs in task 4. The first one is done by ggplotly, and the second one is done by using plotly directly.
+
+
+## Task 6 
+
+To show the achievements of each astronaut, I include their names, mission titles, total number of missions, and total hours. I only include the four most meaningful pieces of information in terms of achievement and try not to overwhelm readers.
+
+Search function is added to each columns for users to find the information they interested in. 
+
+
+```{r}
+data_6 <- select(data_unique, name, mission_title, total_number_of_missions, total_hrs_sum)
+
+datatable(data_6, rownames = FALSE, filter = list(position = "top"),
+options = list(language = list(sSearch = "Filter:")))
+
+```
+
